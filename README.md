@@ -99,7 +99,7 @@ DELETE /api/productos/1
 
 ### 1. Clonar el repositorio
 ```bash
-git clone https://github.com/TU_USUARIO/ms-productos.git
+git clone https://github.com/Miguel-Sanchez241001/ms-productos.git
 cd ms-productos
 ```
 
@@ -158,7 +158,7 @@ docker run -p 8080:8080 \
    git init
    git add .
    git commit -m "feat: ms-productos inicial"
-   git remote add origin https://github.com/TU_USUARIO/ms-productos.git
+   git remote add origin https://github.com/Miguel-Sanchez241001/ms-productos.git
    git push -u origin main
    ```
 
