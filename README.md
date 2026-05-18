@@ -1,66 +1,65 @@
 # ms-productos
 
-Microservicio de gestión del catálogo de productos. Permite registrar, listar, buscar, actualizar y eliminar productos mediante una API REST.
+API REST para gestión del catálogo de productos. Construida con Spring Boot 3.5 y desplegada en Render con base de datos PostgreSQL en Neon.
 
-## Tecnologías utilizadas
+🌐 **Producción:** https://ms-productos-id0q.onrender.com  
+📦 **Repositorio:** https://github.com/Miguel-Sanchez241001/ms-productos
 
-| Tecnología       | Versión  |
-|------------------|----------|
-| Java             | 21       |
-| Spring Boot      | 3.5.0    |
-| Spring Web       | —        |
-| Spring Data JPA  | —        |
-| PostgreSQL Driver| —        |
-| Validation (JSR-380) | —    |
-| Lombok           | —        |
-| Maven            | 3.9+     |
-| Neon (PostgreSQL en la nube) | — |
-| Docker           | —        |
-| Render           | —        |
+---
 
-## Entidad: Producto
+## Stack tecnológico
 
-| Campo         | Tipo         | Descripción                          |
-|---------------|--------------|--------------------------------------|
-| id            | Long         | Identificador único (auto-generado)  |
-| nombre        | String       | Nombre del producto                  |
-| descripcion   | String       | Descripción breve                    |
-| precio        | BigDecimal   | Precio unitario                      |
-| stock         | Integer      | Cantidad disponible                  |
-| estado        | Boolean      | true = activo, false = inactivo      |
-| fechaCreacion | LocalDateTime| Fecha de creación (auto-asignada)    |
+| Capa              | Tecnología                          |
+|-------------------|-------------------------------------|
+| Lenguaje          | Java 21                             |
+| Framework         | Spring Boot 3.5.0                   |
+| Persistencia      | Spring Data JPA + Hibernate 6.6     |
+| Base de datos     | PostgreSQL (Neon — serverless)      |
+| Validaciones      | Jakarta Bean Validation (JSR-380)   |
+| Build             | Maven 3.9                           |
+| Contenedor        | Docker (multi-stage build)          |
+| Despliegue        | Render (Docker runtime)             |
 
-## Endpoints disponibles
+---
 
-### POST /api/productos — Crear producto
-```http
-POST /api/productos
-Content-Type: application/json
+## Modelo de datos
 
+| Campo         | Tipo          | Restricción                            |
+|---------------|---------------|----------------------------------------|
+| id            | Long          | PK, autoincremental                    |
+| nombre        | String        | Obligatorio, no vacío                  |
+| descripcion   | String        | Opcional                               |
+| precio        | BigDecimal    | Obligatorio, mayor que 0               |
+| stock         | Integer       | Obligatorio, mayor o igual a 0         |
+| estado        | Boolean       | `true` = activo · `false` = inactivo   |
+| fechaCreacion | LocalDateTime | Asignada automáticamente en `@PrePersist` |
+
+> La eliminación es **lógica**: el `DELETE` cambia `estado → false`. El registro permanece en la BD.
+
+---
+
+## Endpoints
+
+| Método   | Ruta                    | Descripción                  | Respuesta        |
+|----------|-------------------------|------------------------------|------------------|
+| `POST`   | `/api/productos`        | Crear producto               | `201 Created`    |
+| `GET`    | `/api/productos`        | Listar todos                 | `200 OK`         |
+| `GET`    | `/api/productos/{id}`   | Buscar por ID                | `200` / `404`    |
+| `PUT`    | `/api/productos/{id}`   | Actualizar todos los campos  | `200` / `404`    |
+| `DELETE` | `/api/productos/{id}`   | Desactivar (lógico)          | `204 No Content` |
+
+### POST /api/productos
+```json
 {
   "nombre": "Laptop Lenovo",
   "descripcion": "Laptop para desarrollo de software",
   "precio": 3500.00,
-  "stock": 10,
-  "estado": true
+  "stock": 10
 }
 ```
 
-### GET /api/productos — Listar todos los productos
-```http
-GET /api/productos
-```
-
-### GET /api/productos/{id} — Buscar por ID
-```http
-GET /api/productos/1
-```
-
-### PUT /api/productos/{id} — Actualizar producto
-```http
-PUT /api/productos/1
-Content-Type: application/json
-
+### PUT /api/productos/{id}
+```json
 {
   "nombre": "Laptop Lenovo IdeaPad",
   "descripcion": "Laptop actualizada",
@@ -70,34 +69,37 @@ Content-Type: application/json
 }
 ```
 
-### DELETE /api/productos/{id} — Eliminar (lógico)
-```http
-DELETE /api/productos/1
-```
-> La eliminación es lógica: cambia el campo `estado` a `false`.
-
-## Respuesta de error
-
+### Respuesta exitosa (ejemplo POST)
 ```json
 {
-  "mensaje": "Producto no encontrado",
-  "detalle": "No existe un producto con el ID 10",
-  "fecha": "2026-05-09T10:30:00"
+  "id": 1,
+  "nombre": "Laptop Lenovo",
+  "descripcion": "Laptop para desarrollo de software",
+  "precio": 3500.00,
+  "stock": 10,
+  "estado": true,
+  "fechaCreacion": "2026-05-17T15:42:29.832"
 }
 ```
 
-## Variables de entorno necesarias
+### Respuesta de error
+```json
+{
+  "mensaje": "Producto no encontrado",
+  "detalle": "No existe un producto con el ID 99",
+  "fecha": "2026-05-17T15:42:46.980"
+}
+```
 
-| Variable      | Descripción                                 | Ejemplo                                                   |
-|---------------|---------------------------------------------|-----------------------------------------------------------|
-| `DB_URL`      | JDBC URL de conexión a PostgreSQL en Neon   | `jdbc:postgresql://host/neondb?sslmode=require`           |
-| `DB_USERNAME` | Usuario de la base de datos                 | `neondb_owner`                                            |
-| `DB_PASSWORD` | Contraseña de la base de datos              | `tu_password`                                             |
-| `PORT`        | Puerto del servidor (default: 8080)         | `8080`                                                    |
+---
 
-## Ejecución en local
+## Ejecución local
 
-### 1. Clonar el repositorio
+### Prerrequisitos
+- Java 21
+- Maven 3.9+
+
+### 1. Clonar
 ```bash
 git clone https://github.com/Miguel-Sanchez241001/ms-productos.git
 cd ms-productos
@@ -105,143 +107,88 @@ cd ms-productos
 
 ### 2. Configurar variables de entorno
 
-**Windows (PowerShell):**
+**Windows (PowerShell)**
 ```powershell
-$env:DB_URL="jdbc:postgresql://ep-noisy-sea-aqnnmy17-pooler.c-8.us-east-1.aws.neon.tech/neondb?sslmode=require"
-$env:DB_USERNAME="neondb_owner"
-$env:DB_PASSWORD="tu_password"
-$env:PORT="8080"
+$env:DB_URL      = "jdbc:postgresql://HOST/neondb?sslmode=require"
+$env:DB_USERNAME = "tu_usuario"
+$env:DB_PASSWORD = "tu_password"
+$env:PORT        = "8080"
 ```
 
-**Linux / macOS (bash):**
+**Linux / macOS**
 ```bash
-export DB_URL="jdbc:postgresql://ep-noisy-sea-aqnnmy17-pooler.c-8.us-east-1.aws.neon.tech/neondb?sslmode=require"
-export DB_USERNAME="neondb_owner"
+export DB_URL="jdbc:postgresql://HOST/neondb?sslmode=require"
+export DB_USERNAME="tu_usuario"
 export DB_PASSWORD="tu_password"
 export PORT=8080
 ```
 
-### 3. Compilar y ejecutar
-```bash
-mvn clean package -DskipTests
-java -jar target/ms-productos-0.0.1-SNAPSHOT.jar
-```
-
-O directamente:
+### 3. Ejecutar
 ```bash
 mvn spring-boot:run
+# API disponible en http://localhost:8080/api/productos
 ```
 
-El servicio estará disponible en: `http://localhost:8080/api/productos`
-
-### 4. Ejecutar con Docker (local)
+### 4. Docker (local)
 ```bash
 docker build -t ms-productos .
 docker run -p 8080:8080 \
-  -e DB_URL="jdbc:postgresql://ep-noisy-sea-aqnnmy17-pooler.c-8.us-east-1.aws.neon.tech/neondb?sslmode=require" \
-  -e DB_USERNAME="neondb_owner" \
+  -e DB_URL="jdbc:postgresql://HOST/neondb?sslmode=require" \
+  -e DB_USERNAME="tu_usuario" \
   -e DB_PASSWORD="tu_password" \
   ms-productos
 ```
 
+---
+
 ## Despliegue en Render
 
-### Prerrequisitos
-- Cuenta en [Render](https://render.com)
-- Repositorio en GitHub con el código de este proyecto
-- Base de datos activa en [Neon](https://neon.tech)
+### Variables de entorno requeridas
 
-### Pasos de despliegue
+| Variable      | Descripción                      |
+|---------------|----------------------------------|
+| `DB_URL`      | `jdbc:postgresql://HOST/neondb?sslmode=require` |
+| `DB_USERNAME` | Usuario de Neon                  |
+| `DB_PASSWORD` | Contraseña de Neon               |
+| `PORT`        | `8080`                           |
 
-1. **Subir el código a GitHub:**
-   ```bash
-   git init
-   git add .
-   git commit -m "feat: ms-productos inicial"
-   git remote add origin https://github.com/Miguel-Sanchez241001/ms-productos.git
-   git push -u origin main
-   ```
+### Pasos
+1. Ir a [render.com](https://render.com) → **New** → **Web Service**
+2. Conectar el repo `ms-productos` desde GitHub
+3. Seleccionar **Language: Docker**
+4. Agregar las 4 variables de entorno
+5. Clic en **Create Web Service** — build tarda ~5 min
 
-2. **Crear servicio en Render:**
-   - Ir a [render.com](https://render.com) → **New** → **Web Service**
-   - Conectar tu cuenta de GitHub y seleccionar el repositorio `ms-productos`
-   - Configurar:
-     - **Name:** `ms-productos`
-     - **Language:** `Docker`
-     - **Branch:** `main`
-     - **Dockerfile Path:** `./Dockerfile`
+> ⚠ En el plan gratuito, el servicio duerme tras 15 min de inactividad. La primera petición puede tardar ~30 s.
 
-3. **Configurar variables de entorno en Render:**
-   
-   En la sección **Environment** del servicio, agregar:
+---
 
-   | Key           | Value                                                                                  |
-   |---------------|----------------------------------------------------------------------------------------|
-   | `DB_URL`      | `jdbc:postgresql://ep-noisy-sea-aqnnmy17-pooler.c-8.us-east-1.aws.neon.tech/neondb?sslmode=require` |
-   | `DB_USERNAME` | `neondb_owner`                                                                         |
-   | `DB_PASSWORD` | *(tu contraseña de Neon)*                                                              |
-   | `PORT`        | `8080`                                                                                 |
+## Base de datos — Neon
 
-4. **Iniciar el despliegue:**
-   - Hacer clic en **Create Web Service**
-   - Esperar a que el build de Docker finalice (puede tardar 3-5 minutos la primera vez)
+La tabla `productos` se crea automáticamente con `ddl-auto=update`.
 
-5. **Verificar el despliegue:**
-   ```bash
-   curl https://ms-productos.onrender.com/api/productos
-   ```
-
-> **Nota:** En el plan gratuito de Render, el servicio entra en "sleep" tras 15 minutos de inactividad. La primera petición puede tardar ~30 segundos en despertar.
-
-### Uso con render.yaml (Blueprint)
-
-Alternativamente, usa el archivo `render.yaml` incluido en el proyecto:
-- Ir a Render → **New** → **Blueprint**
-- Conectar el repositorio
-- Render detectará el `render.yaml` y configurará el servicio automáticamente
-- Solo tendrás que ingresar las variables marcadas como `sync: false` (las credenciales)
-
-## URL del servicio desplegado
-
+Para verificar:
+```sql
+-- En el SQL Editor de Neon
+SELECT * FROM productos;
 ```
-https://ms-productos.onrender.com/api/productos
-```
-*(URL de ejemplo — reemplazar con la URL real de Render tras el despliegue)*
 
-## Configuración de Neon (base de datos)
-
-La tabla `productos` se crea automáticamente al iniciar el servicio gracias a `spring.jpa.hibernate.ddl-auto=update`.
-
-Para verificar en Neon:
-1. Ir a [neon.tech](https://neon.tech) → tu proyecto
-2. Abrir el **SQL Editor**
-3. Ejecutar: `SELECT * FROM productos;`
+---
 
 ## Estructura del proyecto
 
 ```
 ms-productos/
 ├── src/main/java/com/examen/productos/
-│   ├── MsProductosApplication.java
-│   ├── controller/
-│   │   └── ProductoController.java
-│   ├── service/
-│   │   └── ProductoService.java
-│   ├── repository/
-│   │   └── ProductoRepository.java
-│   ├── entity/
-│   │   └── Producto.java
-│   ├── dto/
-│   │   ├── ProductoRequestDTO.java
-│   │   └── ProductoResponseDTO.java
-│   └── exception/
-│       ├── ProductoNotFoundException.java
-│       ├── GlobalExceptionHandler.java
-│       └── ErrorResponse.java
+│   ├── controller/   ProductoController.java
+│   ├── service/      ProductoService.java
+│   ├── repository/   ProductoRepository.java
+│   ├── entity/       Producto.java
+│   ├── dto/          ProductoRequestDTO.java · ProductoResponseDTO.java
+│   └── exception/    GlobalExceptionHandler.java · ProductoNotFoundException.java · ErrorResponse.java
 ├── src/main/resources/
 │   └── application.properties
 ├── Dockerfile
 ├── render.yaml
-├── .env.example
 └── pom.xml
 ```
