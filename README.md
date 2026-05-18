@@ -2,8 +2,7 @@
 
 API REST para gestión del catálogo de productos. Construida con Spring Boot 3.5 y desplegada en Render con base de datos PostgreSQL en Neon.
 
-🌐 **Producción:** https://ms-productos-id0q.onrender.com  
-📦 **Repositorio:** https://github.com/Miguel-Sanchez241001/ms-productos
+🌐 **Producción:** https://ms-productos-id0q.onrender.com
 
 ---
 
@@ -101,7 +100,7 @@ API REST para gestión del catálogo de productos. Construida con Spring Boot 3.
 
 ### 1. Clonar
 ```bash
-git clone https://github.com/Miguel-Sanchez241001/ms-productos.git
+git clone https://github.com/TU_USUARIO/ms-productos.git
 cd ms-productos
 ```
 
